@@ -58,3 +58,22 @@ def get_feature_engineered_data(x, y, num_prev_points, num_prev_days, num_prev_w
         x2.append(np.asarray(temp))
     return np.asarray(x2), y1
 
+
+def shift_nodes(x2, y2, ypred):
+    if len(x2[0]) > 1:
+        x2[:,1][1:] = ypred[:-1]  # Put prediction into every previous node slot besides first
+        for i in range(2, len(x2[0])):
+            x2[:, i][:-1] = x2[:, i][1:]  # Move every previous i node back to previous slot
+    return x2[1:-1], y2[1:-1]  # Return all nodes except first and last
+
+
+def predict_q_nodes_ahead(xtest, ytest, q, xtrain, ytrain, model):
+    x2, y2 = xtest, ytest
+    model.fit(xtrain[:-1], ytrain[1:])
+    for i in range(q):
+        ypred = model.predict(x2)
+        ypred[np.isnan(ypred)] = 0
+        if i < q-1:
+            x2, y2 = shift_nodes(x2, y2, ypred)
+    # halfq = math.floor((q-1)/2)
+    return x2, ytest[q-1:-(q-1)], ypred

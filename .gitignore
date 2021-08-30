@@ -1,1 +1,6 @@
+.DS_Store
+/__pycache__
+/.idea
 /venv
+/venv2
+dublinbikes_20200101_20200401.csv
